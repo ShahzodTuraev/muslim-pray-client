@@ -21,7 +21,6 @@ body {
   width: 100vw;
 }
 .main {
-  /* border: 1px solid red; */
   width: 1024px;
   display: flex;
   flex-direction: column;
@@ -37,7 +36,6 @@ body {
 }
 @media (max-width: 1024px) {
   .main {
-    border: 1px solid blue;
     width: 100%;
     height: 100vh;
   }
