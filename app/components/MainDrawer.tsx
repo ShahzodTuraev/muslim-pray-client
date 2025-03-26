@@ -7,6 +7,9 @@ import CalculateIcon from "@mui/icons-material/Calculate";
 import LogoutIcon from "@mui/icons-material/Logout";
 import EditLocationIcon from "@mui/icons-material/EditLocation";
 import { ListItemContent, ListItemDecorator } from "@mui/joy";
+import { deleteCookies } from "../lib/cookiesSetting";
+import { useRouter } from "next/navigation";
+import { successAlert } from "../lib/alertSettings";
 export default function MainDrawer({
   drawerOpen,
   setDrawerOpen,
@@ -14,6 +17,7 @@ export default function MainDrawer({
   drawerOpen: boolean;
   setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const router = useRouter();
   const menuList = [
     { id: 1, title: "Qazo counter", icon: <CalculateIcon /> },
     { id: 2, title: "Daily zirk", icon: <ScatterPlotIcon /> },
@@ -22,6 +26,14 @@ export default function MainDrawer({
     { id: 5, title: "Change location", icon: <EditLocationIcon /> },
     { id: 6, title: "Logout", icon: <LogoutIcon /> },
   ];
+  const onMenuHandler = (id: number) => {
+    if (id === 6) {
+      deleteCookies();
+      setDrawerOpen(false);
+      successAlert("You have been logged out");
+      router.push("/pages/main");
+    }
+  };
   return (
     <Drawer
       anchor="right"
@@ -33,7 +45,10 @@ export default function MainDrawer({
         {menuList.map((ele) => {
           return (
             <ListItem className="drawer-listItem" key={ele.id}>
-              <ListItemButton variant="plain">
+              <ListItemButton
+                onClick={() => onMenuHandler(ele.id)}
+                variant="plain"
+              >
                 <ListItemDecorator sx={{ marginRight: "10px" }}>
                   {ele.icon}
                 </ListItemDecorator>

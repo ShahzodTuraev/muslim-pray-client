@@ -7,6 +7,7 @@ export default function OtpComfirm() {
   const handleChange = (newValue: string) => {
     setOtp(newValue);
   };
+  console.log(otp);
   const validateChar = (value: string) => {
     return Number.isInteger(+value);
   };
