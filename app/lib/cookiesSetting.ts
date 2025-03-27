@@ -7,9 +7,16 @@ export async function setCookies(token: string) {
 
   cookieStore.set("access_token", token, {
     httpOnly: false,
-    maxAge: 60 * 60,
+    maxAge: 3600 * 24 * 180,
   });
   return true;
+}
+export async function getCookies() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token");
+  return token
+    ? { Authorization: `Bearer ${token?.value}` }
+    : { Authorization: `Bearer` };
 }
 export async function deleteCookies() {
   (await cookies()).set("access_token", "", { maxAge: 0 });

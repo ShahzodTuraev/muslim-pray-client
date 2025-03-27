@@ -8,72 +8,109 @@ import MainDrawer from "./components/MainDrawer";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import { useState } from "react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import WeekStat from "./components/weekStat";
-// import useIpLocation from "./hooks/useIpLocation";
-// import UseLocation from "./hooks/useLocation";
-// import usePrayerTime from "./hooks/usePrayerTime";
-export default function HomePage() {
-  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
-  const timeList = [
-    { id: 1, title: "Fajr", time: "05:20", checked: true },
-    { id: 2, title: "Dhuhr", time: "05:20", checked: true },
-    { id: 3, title: "Asr", time: "05:20", checked: true },
-    { id: 4, title: "Maghrib", time: "05:20", checked: true },
-    { id: 5, title: "Isha'a", time: "05:20", checked: true },
-  ];
+import MainApiService from "./apiServices/mainApiService";
+import { useQuery } from "@tanstack/react-query";
+import Loading from "./components/Loading";
+import { CircularProgress } from "@mui/material";
 
-  // const location = UseLocation();
-  // console.log(location);
+export default function HomePage() {
+  // INITIALIZATIONS:
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [checkLoad, setCheckLoad] = useState("");
+  // HANDLERS:
+  const fetchData = async () => {
+    const mainApi = new MainApiService();
+    const data = await mainApi.prayerTimeRequest();
+    return data;
+  };
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["fetchtimer"],
+    queryFn: fetchData,
+    staleTime: 1000 * 60 * 5,
+  });
+  const onCheckHandler = async (
+    code: "01" | "02" | "03" | "04" | "05",
+    id: string | null
+  ) => {
+    try {
+      const mainApiService = new MainApiService();
+      setCheckLoad(code);
+      if (!id) {
+        await mainApiService.savePrayerTime(code);
+      } else {
+        await mainApiService.deletePrayerTime(id);
+      }
+      await refetch();
+      setCheckLoad("");
+    } catch (err) {
+      throw err;
+    }
+  };
+  console.log(data);
   return (
-    <div className="home-main">
-      <div className="home-container">
-        <div className="header">
-          <div className="header-text-wrap">
-            <p className="head"> Daily Prayer Times</p>
-            <p className="head-location">
-              {" "}
-              <LocationOnIcon fontSize="small" /> Seoul, South Korea
-            </p>
-            <p>
-              <TodayIcon className="mr-1" />
-              {moment().format("MMMM DD, YYYY")}
-            </p>
-          </div>
-          <div onClick={() => setDrawerOpen(true)} className="menu-cover">
-            <MenuIcon fontSize="large" />
-          </div>
-        </div>
-        <div className="list">
-          {timeList.map((ele) => {
-            return (
-              <div key={ele.id} className="item">
-                <div className="left-box">
-                  <LightModeIcon />
-                  <p className="title">{ele.title}</p>
-                  <p className="remain-time">
-                    {ele.id == 1
-                      ? "(Sunrise: 06:30)"
-                      : ele.id == 2
-                      ? "-01:22:19"
-                      : ""}
-                  </p>
-                </div>
-                <div className="right-box">
-                  <p>05:20</p>
-                  {true ? (
-                    <CheckCircleIcon className="active" />
-                  ) : (
-                    <CheckCircleOutlineIcon />
-                  )}
-                </div>
+    <>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <div className="home-main">
+          <div className="home-container">
+            <div className="header">
+              <div className="header-text-wrap">
+                <p className="head"> Daily Prayer Times</p>
+                <p className="head-location">
+                  {" "}
+                  <LocationOnIcon fontSize="small" /> Seoul, South Korea
+                </p>
+                <p>
+                  <TodayIcon className="mr-1" />
+                  {moment().format("MMMM DD, YYYY")}
+                </p>
               </div>
-            );
-          })}
+              <div onClick={() => setDrawerOpen(true)} className="menu-cover">
+                <MenuIcon fontSize="large" />
+              </div>
+            </div>
+            <div className="list">
+              {data?.map((ele) => {
+                return (
+                  <div key={ele?.id} className="item">
+                    <div className="left-box">
+                      <LightModeIcon />
+                      <p className="title">{ele?.prayer}</p>
+                      <p className="remain-time">
+                        {ele?.id == "01" ? `(Sunrise: ${ele?.sunrise})` : ""}
+                      </p>
+                    </div>
+                    <div className="right-box">
+                      <p>{ele?.time}</p>
+                      <button
+                        onClick={() =>
+                          onCheckHandler(
+                            ele?.id,
+                            ele?.checked ? ele?.checked : null
+                          )
+                        }
+                      >
+                        {ele?.id !== checkLoad ? (
+                          <CheckCircleIcon
+                            className={ele?.checked ? "active" : "passive"}
+                          />
+                        ) : (
+                          <CircularProgress size={"20px"} color="success" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <WeekStat />
+          </div>
+          <MainDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
         </div>
-        <WeekStat />
-      </div>
-      <MainDrawer drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
-    </div>
+      )}
+    </>
   );
 }

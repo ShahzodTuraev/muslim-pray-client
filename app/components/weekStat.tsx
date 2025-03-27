@@ -22,7 +22,7 @@ export default function WeekStat() {
             {prayer}
           </div>
           {days.map((_, index) => (
-            <div key={index} className="bg-gray-100 rounded-lg p-1">
+            <div key={index} className=" rounded-lg p-1">
               <VerifiedIcon
                 sx={{ fontSize: "16px", color: "rgb(163, 163, 163)" }}
               />

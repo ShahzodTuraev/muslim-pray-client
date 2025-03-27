@@ -74,6 +74,9 @@
 .active {
   color: rgb(2, 160, 2);
 }
+.passive {
+  color: rgb(163, 163, 163);
+}
 .list .item .left-box {
   display: flex;
   align-items: center;
